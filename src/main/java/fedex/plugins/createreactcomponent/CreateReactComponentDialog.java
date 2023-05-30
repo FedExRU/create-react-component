@@ -153,7 +153,7 @@ class CreateReactComponentDialog extends Messages.InputDialog {
         checkBoxModule.setText("Create Module Structure");
 
         checkBoxMemo = new JCheckBox();
-        checkBoxMemo.setText("Memo");
+        checkBoxMemo.setText("Create as Memo");
 
         checkboxPanel.add(checkBoxFc);
         checkboxPanel.add(checkBoxMemo);
