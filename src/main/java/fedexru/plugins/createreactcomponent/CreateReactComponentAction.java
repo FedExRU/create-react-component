@@ -1,11 +1,12 @@
-package fedex.plugins.createreactcomponent;
+package fedexru.plugins.createreactcomponent;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.Map;
@@ -35,11 +36,6 @@ import java.util.Map;
 public class CreateReactComponentAction extends AnAction {
 
     /**
-     * Экспорт packages;
-     */
-    private boolean usePackages = true;
-
-    /**
      * Название создаваемого компонента.
      */
     private String componentName;
@@ -53,6 +49,8 @@ public class CreateReactComponentAction extends AnAction {
     public void actionPerformed(AnActionEvent event) {
         VirtualFile runtimeDirectory = event.getData(PlatformDataKeys.VIRTUAL_FILE);
 
+        Application app = ApplicationManager.getApplication();
+
         assert runtimeDirectory != null;
 
         VirtualFile currentDirectory = runtimeDirectory.getExtension() == null ? runtimeDirectory : runtimeDirectory.getParent();
@@ -63,23 +61,25 @@ public class CreateReactComponentAction extends AnAction {
             componentName = dialog.getValues().first;
             options = dialog.getValues().second;
 
-            try {
-                if (!currentDirectory.isDirectory()) {
-                    throw new IOException(currentDirectory.getName() + "is not valid directory!");
-                }
+            Runnable createComponentCommand = ()-> {
+                try {
+                    if (!currentDirectory.isDirectory()) {
+                        throw new IOException(currentDirectory.getName() + "is not valid directory!");
+                    }
 
-                VirtualFile directory = currentDirectory.createChildDirectory(this, componentName);
+                    VirtualFile directory = currentDirectory.createChildDirectory(this, componentName);
 
                 ComponentStructureCreator creator = new ComponentStructureCreator(directory);
+                ComponentContentCreator content = new ComponentContentCreator(componentName, options);
 
                 if (!currentDirectory.isWritable()) {
                     throw new IOException(currentDirectory.getName() + "is not writable directory!");
                 }
 
-                creator.createFile("index.ts").setBinaryContent(this.getIndexContent().getBytes());
+                creator.createFile("index.ts").setBinaryContent(content.getIndexContent().getBytes());
 
                 if (options.get(CreateReactComponentDialog.OPTION_CREATE_TYPE)) {
-                    creator.createFile("types.ts").setBinaryContent(this.getTypesContent().getBytes());
+                    creator.createFile("types.ts").setBinaryContent(content.getTypesContent().getBytes());
                 }
 
                 if (options.get(CreateReactComponentDialog.OPTION_CREATE_CONSTANTS)) {
@@ -95,75 +95,15 @@ public class CreateReactComponentAction extends AnAction {
                 }
 
                 VirtualFile reactComponent = creator.createFile(componentName + ".tsx");
-                reactComponent.setBinaryContent(this.getComponentContent().getBytes());
-            } catch (IOException e) {
-                Messages.showErrorDialog(e.getMessage(), "An Error Occurred");
-            }
+                reactComponent.setBinaryContent(content.getComponentContent().getBytes());
+                } catch (IOException e) {
+                    Messages.showErrorDialog(e.getMessage(), "An Error Occurred");
+                }
+            };
+
+
+            app.runWriteAction(createComponentCommand);
         }
-    }
-
-    /**
-     * Записать контент файла с компонентом.
-     *
-     * @return String
-     */
-    private @NotNull String getComponentContent() {
-        boolean isFc = options.get(CreateReactComponentDialog.OPTION_CREATE_FC);
-        boolean isMemo = options.get(CreateReactComponentDialog.OPTION_CREATE_MEMO);
-        boolean isTypes = options.get(CreateReactComponentDialog.OPTION_CREATE_TYPE);
-        boolean hasMemoOrFc = isFc || isMemo;
-        boolean hasMemoAndFc = isFc && isMemo;
-
-        String componentType = componentName+"Props";
-        String componentSuffix = (isFc ? ": FC" : (usePackages ? ": CFC" : "")) + (isFc && isTypes || (!isFc && isTypes && usePackages) ? "<"+componentType+">" : "");
-
-        String reactAdditionalImport = hasMemoOrFc ? "{ "+(isFc ? "FC" : "")+(hasMemoAndFc ? ", " : "") + (isMemo ? "memo" : "") + " }" : null;
-
-        String memoPrefix = isMemo ? "memo(" : "";
-        String memoSuffix = isMemo ? ")" : "";
-
-        String propsSuffix = isFc ? "" : (usePackages ? "" : (isTypes ? ": " + componentType : ""));
-
-        String componentReturnType = isFc ? "" : (usePackages ? "" : ": JSX.Element");
-
-        String props = isTypes ? "props" : (!isTypes && isFc ? "{ children }" : "");
-
-        return "import React"+(reactAdditionalImport != null ? ", " + reactAdditionalImport : "")+" from 'react'\n" +
-                (usePackages && !isFc ? "import { CFC } from '@packages/common'\n" : "" ) +
-                (isTypes ? "import { "+componentType+" } from './types'\n" : "") +
-                "\n" +
-                "export const "+componentName+componentSuffix+" = "+memoPrefix+"("+props+propsSuffix+")"+componentReturnType+" => {\n" +
-                "    return (\n" +
-                "        <></>\n" +
-                "    )\n" +
-                "}" + memoSuffix + "\n";
-    }
-
-    /**
-     * Записать контент файла index.ts.
-     *
-     * @return String
-     */
-    private String getIndexContent() {
-        return "export { " +
-                componentName +
-                " } from './" +
-                componentName +
-                "'" +
-                (
-                        options.get(CreateReactComponentDialog.OPTION_CREATE_TYPE) ?
-                                "\nexport type { " + componentName + "Props } from './types'" :
-                                ""
-                ) + "\n";
-    }
-
-    /**
-     * Записать контент файла types.ts.
-     *
-     * @return String
-     */
-    private String getTypesContent() {
-        return "export type " + componentName + "Props = {}\n";
     }
 
     @Override
