@@ -1,4 +1,4 @@
-package fedex.plugins.createreactcomponent;
+package fedexru.plugins.createreactcomponent;
 
 import com.intellij.openapi.vfs.VirtualFile;
 
@@ -6,6 +6,10 @@ import java.io.IOException;
 
 /**
  * Класс для создания директорий и файлов React-компонента.
+ *
+ * @since 1.0.0
+ *
+ * @author Uryadyshev P.A
  */
 public class ComponentStructureCreator {
 

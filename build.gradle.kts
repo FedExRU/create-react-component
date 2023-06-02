@@ -4,8 +4,8 @@ plugins {
   id("org.jetbrains.intellij") version "1.13.3"
 }
 
-group = "fedex.plugins"
-version = "1.0.0"
+group = "fedexru.plugins"
+version = "1.0.1"
 
 repositories {
   mavenCentral()

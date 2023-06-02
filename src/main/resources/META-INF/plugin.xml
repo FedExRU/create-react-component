@@ -1,7 +1,7 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
   <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
-  <id>fedex.plugins.createReactComponent</id>
+  <id>fedexru.plugins.createReactComponent</id>
 
   <!-- Public plugin name should be written in Title Case.
        Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
@@ -28,7 +28,7 @@
 
   </extensions>
   <actions>
-    <action id="CreateReactComponentAction" class="fedex.plugins.createreactcomponent.CreateReactComponentAction" text="Create React Component"
+    <action id="CreateReactComponentAction" class="fedexru.plugins.createreactcomponent.CreateReactComponentAction" text="Create React Component"
             description="Create React component with necessary directory structure">
       <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl Z"/>
     </action>

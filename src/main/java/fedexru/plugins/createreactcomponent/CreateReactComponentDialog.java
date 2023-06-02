@@ -1,4 +1,4 @@
-package fedex.plugins.createreactcomponent;
+package fedexru.plugins.createreactcomponent;
 
 import com.intellij.openapi.ui.InputValidator;
 import com.intellij.openapi.ui.Messages;
@@ -30,6 +30,10 @@ import java.util.Map;
  * @see Messages.InputDialog
  * @see com.intellij.openapi.ui.messages.MessageDialog
  * @see <a href="https://react.dev/learn/keeping-components-pure#purity-components-as-formulas">React Functional Components</a>
+ *
+ * @since 1.0.0
+ *
+ * @author Uryadyshev P.A
  */
 class CreateReactComponentDialog extends Messages.InputDialog {
 
